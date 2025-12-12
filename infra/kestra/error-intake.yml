@@ -1,0 +1,33 @@
+id: error-intake
+namespace: prod
+description: Auto-process error -> create error group
+inputs:
+  - id: error_event
+    type: object
+    required: true
+
+tasks:
+  - id: log_error
+    type: io.kestra.core.tasks.log.Log
+    message: "🟠 Processing: {{ inputs.error_event.service }} - {{ inputs.error_event.error_type }}"
+    level: INFO
+
+  - id: create_group
+    type: io.kestra.plugin.jdbc.postgresql.PostgreSql
+    url: jdbc:postgresql://db:5432/errorflow
+    username: user
+    password: pass
+    sql: |
+      INSERT INTO error_groups (cluster_id, title, summary, status)
+      VALUES (
+        'cluster-{{ format(formatId(), "xxxx") }}',
+        '{{ inputs.error_event.service }}: {{ inputs.error_event.error_type }}',
+        'Auto-grouped: {{ inputs.error_event.message }}',
+        'new'
+      )
+      RETURNING id, cluster_id, title;
+
+  - id: success
+    type: io.kestra.core.tasks.log.Log
+    message: "✅ Created group {{ outputs.create_group.rows[0].cluster_id }}"
+    level: INFO

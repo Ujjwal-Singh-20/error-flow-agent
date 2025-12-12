@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: errorflow
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - app-postgres-data:/var/lib/postgresql/data
+
+  kestra:
+    image: kestra/kestra:latest
+    command: server standalone
+    user: "root"
+    stop_grace_period: 6m
+    environment:
+      KESTRA_CONFIGURATION: |
+        datasources:
+          postgres:
+            url: jdbc:postgresql://db:5432/errorflow
+            driver-class-name: org.postgresql.Driver
+            username: user
+            password: pass
+        kestra:
+          server:
+            basic-auth:
+              enabled: true
+              username: "ujjusingh20@gmail.com"
+              password: "Kestra@2025#5202"
+          repository:
+            type: postgres
+          storage:
+            type: local
+            local:
+              base-path: "/app/storage"
+          queue:
+            type: postgres
+          tasks:
+            tmp-dir:
+              path: /tmp/kestra-wd/tmp
+          url: "http://localhost:8080/"
+    ports:
+      - "8080:8080"
+    volumes:
+      - kestra-data:/app/storage
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/kestra-wd:/tmp/kestra-wd
+    depends_on:
+      - db
+
+volumes:
+  app-postgres-data:
+  kestra-data:
