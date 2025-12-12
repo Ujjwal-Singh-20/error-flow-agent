@@ -1,0 +1,20 @@
+id: group-quiet-check
+namespace: main
+description: "Mark groups as QUIET when no events for a while"
+
+tasks:
+  - id: mark_quiet
+    type: io.kestra.plugin.jdbc.postgresql.Query
+    url: jdbc:postgresql://db:5432/errorflow
+    username: user
+    password: pass
+    sql: |
+      UPDATE error_groups
+      SET status = 'QUIET'
+      WHERE status = 'OPEN'
+        AND NOW() - last_seen > INTERVAL '30 minutes';
+
+triggers:
+  - id: every-5-min
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "*/5 * * * *"   # every 5 minutes

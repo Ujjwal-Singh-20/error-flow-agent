@@ -1,0 +1,38 @@
+
+id: group-ai-batch
+namespace: main
+description: "Run AI summary for all OPEN groups"
+
+tasks:
+  - id: fetch_open_groups
+    type: io.kestra.plugin.jdbc.postgresql.Query
+    url: jdbc:postgresql://db:5432/errorflow
+    username: user
+    password: pass
+    sql: |
+      SELECT cluster_key AS key
+      FROM error_groups
+      WHERE status = 'OPEN';
+    fetchType: FETCH
+
+  - id: each_group
+    type: io.kestra.plugin.core.flow.ForEach
+    # turn rows [{ "key": "order-api:DBError" }, ...] into ["order-api:DBError", ...]
+    values: "{{ outputs.fetch_open_groups.rows  }}"
+    tasks:
+      - id: summarize_group
+        type: io.kestra.plugin.core.flow.Subflow
+        namespace: main
+        flowId: group-summary-agent
+        inputs:
+          cluster_key: "{{ taskrun.value }}"
+
+
+triggers:
+  - id: every-10-min
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "*/10 * * * *"   # every 10 minutes
+
+
+
+

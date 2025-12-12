@@ -1,0 +1,77 @@
+
+id: group-summary-agent
+namespace: main
+description: "Summarise a single error group and decide severity"
+inputs:
+  - id: cluster_key
+    type: STRING
+    required: true
+
+tasks:
+  - id: fetch_errors
+    type: io.kestra.plugin.jdbc.postgresql.Query
+    url: jdbc:postgresql://db:5432/errorflow
+    username: user
+    password: pass
+    sql: |
+      SELECT service, error_type, message, env, path, timestamp
+      FROM errors
+      WHERE CONCAT(service, ':', error_type) = :cluster_key
+      ORDER BY timestamp DESC
+      LIMIT 20;
+    parameters:
+      cluster_key: "{{ inputs.cluster_key }}"
+    fetchType: FETCH
+
+  - id: log_raw
+    type: io.kestra.plugin.core.log.Log
+    level: INFO
+    message: "Fetched errors for {{ inputs.cluster_key }}:\n{{ outputs.fetch_errors.rows }}"
+
+
+  - id: ai_summary
+    type: io.kestra.plugin.ai.agent.AIAgent
+    description: "Use AI to summarise recent errors"
+    provider:
+      type: io.kestra.plugin.ai.provider.GoogleGemini
+      modelName: gemini-2.5-flash
+      apiKey: "{{ secret('GEMINI_API_KEY') }}"
+
+    prompt: |
+      You are an SRE assistant. Given a list of recent application errors, you:
+      1. Summarise what seems to be going wrong in 2–3 sentences.
+      2. Classify severity as one of: low, medium, high.
+      3. Propose 2–4 concrete next steps for the on-call engineer.
+
+      Respond ONLY as compact JSON with keys: summary, severity, next_steps.
+      Do NOT include markdown, code fences, or any extra text.
+
+  - id: log_ai
+    type: io.kestra.plugin.core.log.Log
+    level: INFO
+    message: |
+      AI raw output for {{ inputs.cluster_key }}:
+      {{ outputs.ai_summary | toJson }}
+
+  - id: extract_json
+    type: io.kestra.plugin.core.log.Log
+    level: INFO
+    message: |
+      {{ outputs.ai_summary.textOutput }}
+
+  - id: update_group
+    type: io.kestra.plugin.jdbc.postgresql.Query
+    url: jdbc:postgresql://db:5432/errorflow
+    username: user
+    password: pass
+    sql: |
+      UPDATE error_groups
+      SET
+        ai_summary = :summary_json,
+        ai_next_steps = :summary_json,
+        severity = 'high',        -- or keep existing, or a simple heuristic later
+        status = 'investigating'
+      WHERE cluster_key = :cluster_key;
+    parameters:
+      cluster_key: "{{ inputs.cluster_key }}"
+      summary_json: "{{ outputs.ai_summary.textOutput }}"
