@@ -171,8 +171,8 @@ Verify each shows:
 
 In Kestra:
 
-1. Go to **Administration -> Secrets**.
-2. Add a secret (e.g. `GEMINI_API_KEY`) used by the provider in `group-summary-agent.yml`. (if not set manually in file)
+1. open file `group-summary-agent.yml` in kestra -> flows
+2. set API KEY at line-38 from [here](https://aistudio.google.com/api-keys), without ""
 
 `group-summary-agent` will:
 
