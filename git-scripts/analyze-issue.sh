@@ -16,8 +16,20 @@ if [ -n "$3" ]; then
     ADDRESS="--address $3"
 fi
 
+# Debugging: Print the command being executed
+echo "Running command: cline -y \"$PROMPT: $ISSUE_URL\" --mode act $ADDRESS -F json"
+
 # Ask Cline for its analysis, showing only the summary
-cline -y "$PROMPT: $ISSUE_URL" --mode act $ADDRESS -F json | \
+RESULT=$(cline -y "$PROMPT: $ISSUE_URL" --mode act $ADDRESS -F json 2>&1)
+
+# Check if the command succeeded
+if [ $? -ne 0 ]; then
+    echo "Error: $RESULT"
+    exit 1
+fi
+
+# Process the result
+echo "$RESULT" | \
     sed -n '/^{/,$p' | \
     jq -r 'select(.say == "completion_result") | .text' | \
     sed 's/\\n/\n/g'
