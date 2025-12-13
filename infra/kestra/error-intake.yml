@@ -10,15 +10,3 @@ tasks:
     type: io.kestra.plugin.core.log.Log
     message: "Error event: {{ inputs.error_event }}"
     level: INFO
-
-
-
-
-{
-  "error_event": {
-    "service": "ui-test",
-    "error_type": "TestError",
-    "message": "Ran from UI"
-  }
-}
-

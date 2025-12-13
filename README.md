@@ -363,7 +363,9 @@ In your GitHub repo:
    - `OPENROUTER_API_KEY` – your OpenRouter (or other provider) key.
 3. In **Settings -> Variables -> Repository variables**, add:
    - `CLINE_GITORG` – your GitHub user/org.
-   - `CLINE_GITREPO` – repo that contains `git-scripts/analyze-issue.sh` (usually this one).
+   - `CLINE_GITREPO` – repo name that contains `git-scripts/analyze-issue.sh`. 
+   
+   (for example in this repo, ORG - "Ujjwal-Singh-20", REPO - "error-flow-agent")
 
 Make sure:
 
