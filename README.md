@@ -10,6 +10,12 @@ An end-to-end “error brain” for your services:
 
 ---
 
+Demo Video:
+
+https://youtu.be/O0Y5JWIi8nE
+
+---
+
 ## 1. Repository Layout
 
 error-flow-agent/  
