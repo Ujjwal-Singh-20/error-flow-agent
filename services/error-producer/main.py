@@ -5,7 +5,7 @@ import os
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 import psycopg2
-from datetime import datetime
+from datetime import datetime, timezone
 import random
 import uvicorn
 import requests
@@ -112,7 +112,7 @@ def get_db_connection():
 @app.post("/errors/random")
 async def produce_error():
     error = random.choice(ERRORS)
-    error["timestamp"] = datetime.utcnow().isoformat()
+    error["timestamp"] = datetime.now(timezone.utc).isoformat()
     
     # Save to DB
     conn = get_db_connection()
@@ -131,7 +131,7 @@ async def produce_error():
 async def produce_error_kestra():
     error = random.choice(ERRORS)
     from datetime import datetime
-    error["timestamp"] = datetime.utcnow().isoformat()
+    error["timestamp"] = datetime.now(timezone.utc).isoformat()
 
     # saave raw error to DB
     conn = get_db_connection()
@@ -232,7 +232,7 @@ async def ingest_custom_error(request: Request):
     # fill defaults
     error.setdefault("env", "prod")
     error.setdefault("path", "")
-    error["timestamp"] = datetime.utcnow().isoformat()
+    error["timestamp"] = datetime.now(timezone.utc).isoformat()
     trace_id = str(uuid.uuid4())[:16]
 
     # ave raw error to DB

@@ -218,9 +218,11 @@ All endpoints are served by `services/error-producer/main.py`.
 ### 7.2 Real ingestion endpoint (for your own app)	
 
 `POST /errors/custom  `
+
 Content-Type: application/json
 
 #Example schema
+
 {  
 "service": "user-api",  
 "error_type": "NullPointer",  
@@ -233,7 +235,7 @@ Content-Type: application/json
 The endpoint:
 
 - Accepts your error JSON.
-- Fills `timestamp` and `trace_id`.
+- Fills `timestamp`(in UTC) and `trace_id`.
 - Inserts into `errors`.
 - Upserts into `error_groups` by `cluster_key = service:error_type`.
 - Triggers Kestra `error-intake` with `error_event` = your payload.
@@ -405,8 +407,7 @@ To start from a clean slate:
 
 `docker cp ./sql/schema.sql error-flow-agent-db-1:/schema.sql`
 
-`docker exec -it error-flow-agent-db-1 psql -U user -d errorflow -f /schema.sql
-`
+`docker exec -it error-flow-agent-db-1 psql -U user -d errorflow -f /schema.sql`
 
 ## Kestra flows:
 

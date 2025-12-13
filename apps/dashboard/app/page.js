@@ -97,7 +97,7 @@ function StatusBadge({ status }) {
                 </div>
                 <pre style={{ fontSize: '0.9rem', whiteSpace: 'pre-wrap', color: '#fca5a5' }}>{error.message}</pre>
                 <div style={{ fontSize: '0.8rem', color: '#9ca3af' }}>
-                  {new Date(error.timestamp).toLocaleString()}
+                  {new Date(error.timestamp).toLocaleString()} UTC
                 </div>
               </div>
             ))}
@@ -132,7 +132,7 @@ function StatusBadge({ status }) {
                   )}
 
                   <div style={{ fontSize: '0.8rem', color: '#9ca3af' }}>
-                    Last Seen: {new Date(group.last_seen).toLocaleString()}
+                    Last Seen: {new Date(group.last_seen).toLocaleString()} UTC
                   </div>
 
                   {group.status !== "RESOLVED" && (
