@@ -255,6 +255,8 @@ This is the endpoint you should wire your **real project logs** or middleware to
 
 ### 8.1 Demo flow
 
+Run the `main.py` file in `/services/error-producer`
+
 Use the demo generator:
 
 `curl -X POST http://127.0.0.1:8000/errors/with-kestra`
